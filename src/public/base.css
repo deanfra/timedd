@@ -1,0 +1,10 @@
+#app, html,body {
+  color: white;
+  background: #292929;
+  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}

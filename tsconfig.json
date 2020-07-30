@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist",
+    "module": "es2015",
+    "target": "es5",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "sourceMap": true,
+    "allowJs": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "rootDir": "/",
+    "esModuleInterop": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "types": ["@emotion/core", "@types/jest"]
+  },
+  "typeRoots": [
+    "node_modules/@types",
+    "@types",
+    "./src/custom.d.ts"
+  ],
+  "includes": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "*.js",
+    "node_modules",
+    "dist"
+  ],
+  "types": [
+    "typePatches"
+  ],
+  "plugins": [
+    {
+      "name": "typescript-styled-plugin"
+    }
+  ]
+}
