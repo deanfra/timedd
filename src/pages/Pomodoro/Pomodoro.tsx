@@ -1,11 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
+import { store } from '../../store/index';
+import Interval from '../../models/Interval';
+import theme from '../../theme';
+
 import Block from './components/Block';
+import Button from '../../components/Button';
 import Controls from './components/Controls';
 import Flex from '../../components/Flex';
-import { store } from '../../store/index';
-import theme from '../../theme';
 import Icon from '../../components/Icon';
+import SettingsPanel from './components/SettingsPanel';
 
 const millisecondsToTime = (milliseconds: number): string => {
   const minutes = Math.round((milliseconds / 1000) / 60);
@@ -22,35 +26,27 @@ const millisecondsToTime = (milliseconds: number): string => {
 };
 
 const Pomodoro = (): JSX.Element => {
-  const { tasks, time } = useContext(store);
-  const [breakState, setBreak] = useState(false);
-  const { curTime } = time.state;
-  const taskList = tasks.state;
-  const currentInterval = time.state.intervals[time.state.interval];
+  const { tasks, time, config } = useContext(store);
+  const [isBreakState, setIsBreak] = useState(false);
+  const [showSettingState, setShowSetting] = useState(false);
+  const currentInterval: Interval | undefined = time.state.intervals[time.state.interval];
 
-  const next = (() => {
-    time.dispatch({ type: 'NEXT_INTERVAL' });
-  });
+  const next = (() => { time.dispatch({ type: 'NEXT_INTERVAL', props: {} }); });
+  const previous = (() => { time.dispatch({ type: 'PREVIOUS_INTERVAL', props: {} }); });
+  const playPause = (() => { time.dispatch({ type: 'TOGGLE_PAUSED', props: {} }); });
+  const replay = (() => { time.dispatch({ type: 'SKIP_SECONDS', props: { secs: -30 } }); });
+  const skip = (() => { time.dispatch({ type: 'SKIP_SECONDS', props: { secs: 30 } }); });
+  const toggleShowSetting = (() => { setShowSetting(!showSettingState); });
 
-  const previous = (() => {
-    time.dispatch({ type: 'PREVIOUS_INTERVAL' });
-  });
+  // Generate intervals based on config
+  useEffect(() => {
+    time.dispatch({ type: 'GENERATE_INTERVALS', props: { config: config.state } });
+  }, []);
 
-  const playPause = (() => {
-    time.dispatch({ type: 'TOGGLE_PAUSED' });
-  });
-
-  const replay = (() => {
-    time.dispatch({ type: 'SKIP_SECONDS', props: { secs: -30 } });
-  });
-
-  const skip = (() => {
-    time.dispatch({ type: 'SKIP_SECONDS', props: { secs: 30 } });
-  });
-
+  // Begin timer
   useEffect(() => {
     time.state.intervalEvent = setInterval(() => {
-      time.dispatch({ type: 'TIME_TICK' });
+      time.dispatch({ type: 'TIME_TICK', props: {} });
     }, 100);
     return () => {
       clearInterval(time.state.intervalEvent);
@@ -58,32 +54,41 @@ const Pomodoro = (): JSX.Element => {
   }, []);
 
   useEffect(() => {
-    setBreak(currentInterval.type === 'shortBreak' || currentInterval.type === 'longBreak');
-  }, [currentInterval.type]);
+    if (currentInterval) {
+      const isBreak = currentInterval.type === 'shortBreak' || currentInterval.type === 'longBreak';
+      setIsBreak(isBreak);
+    }
+  }, [currentInterval]);
 
   return (
-    <PomodoroWrap direction="column" isBreak={breakState} data-testid="app">
-      <Block
-        key={currentInterval.id}
-        interval={currentInterval}
-        curTime={curTime}
-        tasks={taskList}
-      />
-      <Controls
-        next={next}
-        previous={previous}
-        playPause={playPause}
-        replay={replay}
-        skip={skip}
-        paused={time.state.paused}
-      />
-      <br />
-      <br />
+    <PomodoroWrap direction="column" isBreak={isBreakState} data-testid="app">
+      {(showSettingState && (<SettingsPanel config={config.state} dispatch={config.dispatch} />))
+      || (currentInterval && (
+      <>
+        <Block
+          key={currentInterval.id}
+          interval={currentInterval}
+          curTime={time.state.curTime}
+          tasks={tasks.state}
+        />
+        <Controls
+          next={next}
+          previous={previous}
+          playPause={playPause}
+          replay={replay}
+          skip={skip}
+          paused={time.state.paused}
+        />
+        {millisecondsToTime(currentInterval ? currentInterval.remaining : 0)}
+      </>
+      ))
+      || null}
 
-      {millisecondsToTime(currentInterval.remaining)}
-      <p>
-        <Icon type="settings" color="white" />
-      </p>
+      <Flex>
+        <Button onClick={() => toggleShowSetting()} opacity={0.3}>
+          <Icon color="white" type="settings" />
+        </Button>
+      </Flex>
     </PomodoroWrap>
   );
 };

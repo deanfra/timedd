@@ -1,9 +1,11 @@
-import { Action } from '../index';
 import Task from '../../models/Task';
 import definition from '../../components/Icon/definition';
 
 export type TasksState = Task[]
-export type TasksActions = 'TASK_DONE' | 'TASK_UPDATED' | 'TASK_POSTPONE' | 'TASK_CREATE' | 'TASK_DELETE'
+export type TasksAction = {
+  type: 'TASK_DONE' | 'TASK_UPDATED' | 'TASK_POSTPONE' | 'TASK_CREATE' | 'TASK_DELETE',
+  props: any
+}
 
 const templateState: TasksState = [
   {
@@ -58,7 +60,7 @@ const finishTask = (state: TasksState, task: Task): TasksState => {
   return updateTask(state, updatedTask);
 };
 
-const callback = (curState: TasksState, action: Action): TasksState | never => {
+const callback = (curState: TasksState, action: TasksAction): TasksState | never => {
   let newState: TasksState;
   switch (action.type) {
     case 'TASK_DONE':

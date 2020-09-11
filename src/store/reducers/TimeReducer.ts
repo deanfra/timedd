@@ -1,8 +1,10 @@
-/* eslint-disable no-param-reassign */
-import { Action } from '../index';
 import Interval from '../../models/Interval';
+import { ConfigState } from './ConfigReducer';
 
-export type TimeActions = 'TIME_TICK' | 'TOGGLE_PAUSED' | 'NEXT_INTERVAL' | 'PREVIOUS_INTERVAL' | 'SKIP_SECONDS'
+export type TimeAction = {
+  type: 'TIME_TICK' | 'TOGGLE_PAUSED' | 'NEXT_INTERVAL' | 'PREVIOUS_INTERVAL' | 'GENERATE_INTERVALS' | 'SKIP_SECONDS',
+  props: any
+}
 
 export type TimeState = {
   curTime: number
@@ -12,12 +14,14 @@ export type TimeState = {
   intervals: Interval[]
 }
 
-type IntervalTypes = {
+type IntervalTemplates = {
   [key: string]: Omit<Interval, 'id' | 'remaining' | 'type'>;
 }
 
-const minute = (1000 * 60);
-const intervalTypes: IntervalTypes = {
+const second = 1000;
+const minute = (second * 60);
+
+const intervalTemplates: IntervalTemplates = {
   shortBreak: {
     label: 'Short Break',
     duration: minute * 4,
@@ -32,11 +36,12 @@ const intervalTypes: IntervalTypes = {
   },
 };
 
-const intervals: Interval[] = ['work', 'shortBreak', 'work', 'shortBreak', 'work', 'shortBreak', 'work', 'longBreak'].map((type, i) => ({
+const cycles = ['work', 'shortBreak', 'work', 'shortBreak', 'work', 'shortBreak', 'work', 'longBreak'];
+const createIntervals = (templates: IntervalTemplates): Interval[] => cycles.map((type, i) => ({
   id: Math.floor(Math.random() * 1000).toString(),
   type,
-  remaining: intervalTypes[type].duration,
-  ...intervalTypes[type],
+  remaining: templates[type].duration,
+  ...templates[type],
 }));
 
 const initialState: TimeState = {
@@ -44,18 +49,28 @@ const initialState: TimeState = {
   intervalEvent: null,
   paused: false,
   interval: 0,
-  intervals,
+  intervals: [],
 };
 
 const timeTick = (state: TimeState) => {
   const newState = { ...state };
-  if (!newState.paused) {
+  if (!newState.paused && newState.intervals.length) {
     if (newState.intervals[state.interval].remaining > 0) {
       newState.intervals[state.interval].remaining -= 100;
     } else {
       newState.interval += 1;
     }
   }
+  return newState;
+};
+
+const generateIntervals = (appConfig: ConfigState) => {
+  const newState = { ...initialState };
+  intervalTemplates.work.duration = appConfig.workIntervalDuration;
+  intervalTemplates.shortBreak.duration = appConfig.shortBreakIntervalDuration;
+  intervalTemplates.longBreak.duration = appConfig.longBreakIntervalDuration;
+
+  newState.intervals = createIntervals(intervalTemplates);
   return newState;
 };
 
@@ -75,9 +90,11 @@ const incrementTime = (state: TimeState, seconds: number) => {
   return newState;
 };
 
-const callback = (state: TimeState, action: Action): TimeState | never => {
+const callback = (state: TimeState, action: TimeAction): TimeState | never => {
   const newState = { ...state };
   switch (action.type) {
+    case 'GENERATE_INTERVALS':
+      return generateIntervals(action.props.config);
     case 'NEXT_INTERVAL':
       return incrementInterval(state, 1);
     case 'PREVIOUS_INTERVAL':

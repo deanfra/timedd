@@ -24,7 +24,7 @@ const TaskList = ({ interval }: Props): JSX.Element => {
   };
 
   const newTask = (): any => {
-    taskStore.dispatch({ type: 'TASK_CREATE' });
+    taskStore.dispatch({ type: 'TASK_CREATE', props: {} });
   };
 
   const deleteTask = (task: Task): any => {
