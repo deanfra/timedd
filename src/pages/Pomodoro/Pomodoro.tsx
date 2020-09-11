@@ -10,20 +10,7 @@ import Controls from './components/Controls';
 import Flex from '../../components/Flex';
 import Icon from '../../components/Icon';
 import SettingsPanel from './components/SettingsPanel';
-
-const millisecondsToTime = (milliseconds: number): string => {
-  const minutes = Math.round((milliseconds / 1000) / 60);
-  const seconds = (milliseconds / 1000) % 60;
-  const secondsStr = seconds.toString();
-  let secs;
-  if (seconds >= 10) {
-    secs = secondsStr.substring(0, 2);
-  } else {
-    secs = `0${secondsStr.substring(0, 1)}`;
-  }
-
-  return `${minutes}:${secs}`;
-};
+import timeUtil from '../../util/time';
 
 const Pomodoro = (): JSX.Element => {
   const { tasks, time, config } = useContext(store);
@@ -79,7 +66,7 @@ const Pomodoro = (): JSX.Element => {
           skip={skip}
           paused={time.state.paused}
         />
-        {millisecondsToTime(currentInterval ? currentInterval.remaining : 0)}
+        {timeUtil.millisecondsToTime(currentInterval ? currentInterval.remaining : 0)}
       </>
       ))
       || null}

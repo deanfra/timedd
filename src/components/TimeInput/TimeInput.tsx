@@ -1,8 +1,9 @@
 import React, { useEffect, useState, ReactText } from 'react';
 import Input from '../Input';
+import timeUtil from '../../util/time';
 
 type Props = {
-  value: ReactText,
+  value: number,
   onBlur: (val: ReactText) => void,
 }
 
