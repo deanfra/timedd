@@ -10,12 +10,19 @@ type Props = {
 const TimeInput = ({
   value,
   onBlur,
-}: Props): JSX.Element => (
-  <Input
-    number
-    value={value}
-    onBlur={onBlur}
-  />
-);
+}: Props): JSX.Element => {
+  const [timeState, setTimeState] = useState(timeUtil.millisecondsToTime(value));
+
+  useEffect(() => {
+    setTimeState(timeUtil.millisecondsToTime(value));
+  }, [value]);
+
+  return (
+    <Input
+      value={timeState}
+      onBlur={(val: string) => onBlur(timeUtil.timeToMilliseconds(val))}
+    />
+  );
+};
 
 export default TimeInput;
