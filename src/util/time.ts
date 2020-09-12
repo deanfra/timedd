@@ -13,4 +13,16 @@ const millisecondsToTime = (ms: number): string => {
   return `${forceDigits(minutes)}:${forceDigits(seconds)}`;
 };
 
-export default { millisecondsToTime };
+const timeToMilliseconds = (time: string): number => {
+  const [mins, secs] = time.split(':');
+  if (!mins || !secs) {
+    return 0;
+  }
+
+  const parsedSeconds = parseInt(secs, 10);
+  const parsedMinutes = parseInt(mins, 10);
+
+  return (parsedSeconds * 1000) + (parsedMinutes * 1000 * 60);
+};
+
+export default { millisecondsToTime, timeToMilliseconds };
